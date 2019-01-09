@@ -101,7 +101,7 @@ RUN apt-get update && \
     curl -sSL http://neuro.debian.net/lists/trusty.us-ca.full >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /tmp/neurodebian_pgpkey.txt && \
     apt-get update && \
-    apt-get install -y fsl-core && \
+    apt-get install -y fsl-core=5.0.9-5~nd14.04+1 && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Configure FSL environment
@@ -146,23 +146,3 @@ COPY pipeline_patch/ ${HCPPIPEDIR}/
 
 # Manual patch for settings.sh and re-compiled FIX
 COPY fix_patch/ ${FSL_FIXDIR}/
-
-#############################################
-
-# Make directory for flywheel spec (v0)
-ENV FLYWHEEL /flywheel/v0
-WORKDIR ${FLYWHEEL}
-
-# Copy executable/manifest to Gear
-COPY run ${FLYWHEEL}/run
-COPY manifest.json ${FLYWHEEL}/manifest.json
-
-# Copy additional scripts and scenes
-COPY scripts/*.sh scripts/*.bat ${FLYWHEEL}/scripts/
-
-# ENV preservation for Flywheel Engine
-RUN env -u HOSTNAME -u PWD | \
-  awk -F = '{ print "export " $1 "=\"" $2 "\"" }' > ${FLYWHEEL}/docker-env.sh
-
-# Configure entrypoint
-ENTRYPOINT ["/flywheel/v0/run"]
